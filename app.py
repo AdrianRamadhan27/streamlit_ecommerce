@@ -13,10 +13,10 @@ orders_df = pd.read_csv("data/orders_dataset.csv")
 order_items_df = pd.read_csv("data/order_items_dataset.csv")
 order_payments_df = pd.read_csv("data/order_payments_dataset.csv")
 order_reviews_df = pd.read_csv("data/order_reviews_dataset.csv")
-geolocation_df = pd.read_csv("data/geolocation_dataset.csv")
+# geolocation_df = pd.read_csv("data/geolocation_dataset.csv")
 ## Clean data
 def clean_data():
-    geolocation_df.drop_duplicates(inplace=True)
+    # geolocation_df.drop_duplicates(inplace=True)
     products_df['product_category_name'].fillna("unknown", inplace=True)
     category_df.loc[-1] = ["unknown", "unknown"]
     products_df['product_name_lenght'].fillna(0, inplace=True)
@@ -94,21 +94,21 @@ def create_by_category_df(is_top):
     return top_or_bottom_10
 
 
-def create_by_location_df(person_type):
-    if person_type == "customer":
-        person_df = customers_df
-    else:
-        person_df = sellers_df
-    merged_df = pd.merge(person_df, geolocation_df, left_on=f'{person_type}_zip_code_prefix', right_on='geolocation_zip_code_prefix')
-    order_and_items_df = pd.merge(main_orders_df, order_items_df)
-    merged_df = pd.merge(merged_df, order_and_items_df, on=f'{person_type}_id')
+# def create_by_location_df(person_type):
+#     if person_type == "customer":
+#         person_df = customers_df
+#     else:
+#         person_df = sellers_df
+#     merged_df = pd.merge(person_df, geolocation_df, left_on=f'{person_type}_zip_code_prefix', right_on='geolocation_zip_code_prefix')
+#     order_and_items_df = pd.merge(main_orders_df, order_items_df)
+#     merged_df = pd.merge(merged_df, order_and_items_df, on=f'{person_type}_id')
 
-    region_sales = merged_df.groupby(['geolocation_lat', 'geolocation_lng']).size().reset_index(name='number_of_orders')
+#     region_sales = merged_df.groupby(['geolocation_lat', 'geolocation_lng']).size().reset_index(name='number_of_orders')
 
-    gdf = gpd.GeoDataFrame(region_sales, 
-                       geometry=gpd.points_from_xy(region_sales['geolocation_lng'], region_sales['geolocation_lat']))
-    gdf = gdf.sort_values(by='number_of_orders')
-    return gdf
+#     gdf = gpd.GeoDataFrame(region_sales, 
+#                        geometry=gpd.points_from_xy(region_sales['geolocation_lng'], region_sales['geolocation_lat']))
+#     gdf = gdf.sort_values(by='number_of_orders')
+#     return gdf
 
 def create_by_time_df(time_type):
     time_df = main_orders_df.copy()
@@ -150,8 +150,8 @@ def create_by_review_df(score):
 top10_by_category = create_by_category_df(is_top=True) 
 bottom10_by_category = create_by_category_df(is_top=False) 
 
-by_customer_location = create_by_location_df("customer")
-by_seller_location = create_by_location_df("seller")
+# by_customer_location = create_by_location_df("customer")
+# by_seller_location = create_by_location_df("seller")
 
 by_hour_of_day = create_by_time_df("hour_of_day")
 by_day_of_week = create_by_time_df("day_of_week")
@@ -199,51 +199,51 @@ with tab2:
         st.pyplot(fig)
 
 
-world = gpd.read_file("ne/ne_110m_admin_0_countries.shp")
+# world = gpd.read_file("ne/ne_110m_admin_0_countries.shp")
 
-# Filter for Brazil
-brazil = world[world['ADMIN'] == 'Brazil']
-st.header('Orders Location')
-tab3, tab4 = st.tabs(["By Customer", "By Seller"])
-with tab3:
-    st.subheader("Orders by Customer Regions")
-    with st.container():
+# # Filter for Brazil
+# brazil = world[world['ADMIN'] == 'Brazil']
+# st.header('Orders Location')
+# tab3, tab4 = st.tabs(["By Customer", "By Seller"])
+# with tab3:
+#     st.subheader("Orders by Customer Regions")
+#     with st.container():
 
-        fig, ax = plt.subplots(figsize=(12, 10))
+#         fig, ax = plt.subplots(figsize=(12, 10))
 
-        brazil.plot(ax=ax, color='lightgray', edgecolor='black')
+#         brazil.plot(ax=ax, color='lightgray', edgecolor='black')
 
-        # Ukurang titik jg dipengaruhi jumlah order
-        by_customer_location.plot(ax=ax, 
-                markersize=by_customer_location['number_of_orders'] / by_customer_location['number_of_orders'].max() * 100, 
-                cmap='coolwarm', 
-                column='number_of_orders', 
-                legend=True)
+#         # Ukurang titik jg dipengaruhi jumlah order
+#         by_customer_location.plot(ax=ax, 
+#                 markersize=by_customer_location['number_of_orders'] / by_customer_location['number_of_orders'].max() * 100, 
+#                 cmap='coolwarm', 
+#                 column='number_of_orders', 
+#                 legend=True)
 
-        plt.title('Top-Performing Regions by Number of Products Bought')
-        plt.xlabel('Longitude')
-        plt.ylabel('Latitude')
-        st.pyplot(fig)
+#         plt.title('Top-Performing Regions by Number of Products Bought')
+#         plt.xlabel('Longitude')
+#         plt.ylabel('Latitude')
+#         st.pyplot(fig)
 
-with tab4:
-    st.subheader("Orders by Seller Regions")
-    with st.container():
+# with tab4:
+#     st.subheader("Orders by Seller Regions")
+#     with st.container():
 
-        fig, ax = plt.subplots(figsize=(12, 10))
+#         fig, ax = plt.subplots(figsize=(12, 10))
 
-        brazil.plot(ax=ax, color='lightgray', edgecolor='black')
+#         brazil.plot(ax=ax, color='lightgray', edgecolor='black')
 
-        # Ukurang titik jg dipengaruhi jumlah order
-        by_seller_location.plot(ax=ax, 
-                markersize=by_seller_location['number_of_orders'] / by_seller_location['number_of_orders'].max() * 100, 
-                cmap='coolwarm', 
-                column='number_of_orders', 
-                legend=True)
+#         # Ukurang titik jg dipengaruhi jumlah order
+#         by_seller_location.plot(ax=ax, 
+#                 markersize=by_seller_location['number_of_orders'] / by_seller_location['number_of_orders'].max() * 100, 
+#                 cmap='coolwarm', 
+#                 column='number_of_orders', 
+#                 legend=True)
 
-        plt.title('Top-Performing Regions by Number of Products Bought')
-        plt.xlabel('Longitude')
-        plt.ylabel('Latitude')
-        st.pyplot(fig)
+#         plt.title('Top-Performing Regions by Number of Products Bought')
+#         plt.xlabel('Longitude')
+#         plt.ylabel('Latitude')
+#         st.pyplot(fig)
 
 
 st.header('Purchases by Time')
